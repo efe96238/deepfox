@@ -20,12 +20,43 @@ class Adam:
         self.v[i] = np.zeros_like(p)
 
       self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * g
-      self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (g ** 2)
+      self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (g * g)
 
       m_hat = self.m[i] / (1 - self.beta1 ** self.t)
       v_hat = self.v[i] / (1 - self.beta2 ** self.t)
 
-      params[i] -= self.lr * m_hat / (np.sqrt(v_hat) + self.eps)
+      p -= self.lr * m_hat / (np.sqrt(v_hat) + self.eps)
+
+class AdamW:
+  def __init__(self, lr=0.001, beta1=0.9, beta2=0.999, eps=1e-8, weight_decay=0.01):
+    self.lr = lr
+    self.beta1 = beta1
+    self.beta2 = beta2
+    self.eps = eps
+    self.weight_decay = weight_decay
+
+    self.m = {}
+    self.v = {}
+    self.t = 0
+
+  def step(self, params, grads):
+    self.t += 1
+
+    for i, (p, g) in enumerate(zip(params, grads)):
+      if i not in self.m:
+        self.m[i] = np.zeros_like(p)
+        self.v[i] = np.zeros_like(p)
+
+      self.m[i] = self.beta1 * self.m[i] + (1 - self.beta1) * g
+      self.v[i] = self.beta2 * self.v[i] + (1 - self.beta2) * (g * g)
+
+      m_hat = self.m[i] / (1 - self.beta1 ** self.t)
+      v_hat = self.v[i] / (1 - self.beta2 ** self.t)
+
+      adam_update = self.lr * m_hat / (np.sqrt(v_hat) + self.eps)
+      decay_update = self.lr * self.weight_decay * p
+
+      p -= adam_update + decay_update
 
 class SGD:
   def __init__(self, lr=0.001):

@@ -13,6 +13,20 @@ class MSE:
   def backward(self):
     n = self.y.size
     return (2 / n) * (self.y_pred - self.y)
+  
+class MAE:
+  def forward(self, y, y_pred):
+    y = np.asarray(y)
+    y_pred = np.asarray(y_pred)
+
+    self.y = y
+    self.y_pred = y_pred
+
+    return np.mean(np.abs(y - y_pred))
+  
+  def backward(self):
+    n = self.y.size
+    return np.sign(self.y_pred - self.y) / n
 
 class BinaryCE:
   def forward(self, y, y_pred):
