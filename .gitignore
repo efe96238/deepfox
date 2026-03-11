@@ -1,1 +1,5 @@
 .venv/
+__pycache__/
+testsets/
+testscripts/
+project_direction.md
