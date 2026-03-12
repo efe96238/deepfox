@@ -19,21 +19,12 @@ class Model:
   def parameters(self):
     params = []
     for layer in self.layers:
-      if hasattr(layer, "parameters"):
-        params.extend(layer.parameters())
+      params.extend(layer.parameters())
     return params
 
-  def grads(self):
-    grads = []
-    for layer in self.layers:
-      if hasattr(layer, "grads"):
-        grads.extend(layer.grads())
-    return grads
-
   def zero_grad(self):
-    for layer in self.layers:
-      if hasattr(layer, "zero_grad"):
-        layer.zero_grad()
+    for p in self.parameters():
+      p.zero_grad()
 
   def __call__(self, x):
     return self.forward(x)
