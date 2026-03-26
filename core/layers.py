@@ -15,6 +15,11 @@ class Layer:
     for p in self.parameters():
       p.zero_grad()
 
+  def get_config(self):
+    return {
+      "type": self.__class__.__name__
+    }
+
 class Linear(Layer):
   def __init__(self, in_features, out_features):
     limit = np.sqrt(2.0 / in_features)
@@ -41,3 +46,12 @@ class Linear(Layer):
 
   def parameters(self):
     return [self.weights, self.bias]
+  
+  def get_config(self):
+    in_features, out_features = self.weights.data.shape
+
+    return {
+      "type": "Linear",
+      "in_features": int(in_features),
+      "out_features": int(out_features)
+    }
