@@ -1,14 +1,14 @@
 import numpy as np
 
 import deepfox as dfx
-from deepfox import Linear, ReLU
+from deepfox import Linear, ReLU, Sequential
 
 data = np.genfromtxt("testsets/non_linear_dataset.csv", delimiter=",", skip_header=1)
 
 X = data[:, 0:1]
 y = data[:, 1:2]
 
-model = dfx.Model(Linear(1, 16), ReLU(), Linear(16, 16), ReLU(), Linear(16, 1))
+model = dfx.Model(Sequential(Linear(1, 16), ReLU(), Linear(16, 16), ReLU(), Linear(16, 1)))
 
 model.load("models/save_test.dpx")
 

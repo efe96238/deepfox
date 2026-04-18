@@ -4,26 +4,26 @@ import numpy as np
 
 
 class Model:
-  def __init__(self, *layers):
-    self.layers = list(layers)
+  def __init__(self, *blocks):
+    self.blocks = list(blocks)
 
-  def add(self, layer):
-    self.layers.append(layer)
+  def add(self, block):
+    self.blocks.append(block)
 
   def forward(self, x):
-    for layer in self.layers:
-      x = layer.forward(x)
+    for block in self.blocks:
+      x = block.forward(x)
     return x
 
   def backward(self, grad):
-    for layer in reversed(self.layers):
-      grad = layer.backward(grad)
+    for block in reversed(self.blocks):
+      grad = block.backward(grad)
     return grad
 
   def parameters(self):
     params = []
-    for layer in self.layers:
-      params.extend(layer.parameters())
+    for block in self.blocks:
+      params.extend(block.parameters())
     return params
 
   def zero_grad(self):
@@ -36,7 +36,7 @@ class Model:
     manifest = {
       "format": "DeepFox",
       "version": 1,
-      "layers": [layer.get_config() for layer in self.layers],
+      "blocks": [block.get_config() for block in self.blocks],
       "parameters": []
     }
 
@@ -71,10 +71,10 @@ class Model:
       if manifest.get("format") != "DeepFox":
         raise ValueError("Invalid .dpx file format.")
 
-      saved_layers = manifest.get("layers", [])
-      current_layers = [layer.get_config() for layer in self.layers]
+      saved_blocks = manifest.get("blocks", [])
+      current_blocks = [block.get_config() for block in self.blocks]
 
-      if saved_layers != current_layers:
+      if saved_blocks != current_blocks:
         raise ValueError("Model architecture does not match the .dpx file.")
 
       saved_params = manifest.get("parameters", [])

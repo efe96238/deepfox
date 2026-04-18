@@ -19,6 +19,32 @@ class Layer:
     return {
       "type": self.__class__.__name__
     }
+  
+class Sequential(Layer):
+  def __init__(self, *layers):
+    self.layers = list(layers)
+
+  def forward(self, x):
+    for layer in self.layers:
+      x = layer.forward(x)
+    return x
+
+  def backward(self, grad):
+    for layer in reversed(self.layers):
+      grad = layer.backward(grad)
+    return grad
+  
+  def parameters(self):
+    params = []
+    for layer in self.layers:
+      params.extend(layer.parameters())
+    return params
+  
+  def get_config(self):
+    return {
+      "type": "Sequential",
+      "layers": [layer.get_config() for layer in self.layers]
+    }
 
 class Linear(Layer):
   def __init__(self, in_features, out_features):
