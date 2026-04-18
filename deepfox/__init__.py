@@ -11,7 +11,7 @@ from .parameter import Parameter
 
 __all__ = [
   "Model",
-  "Linear", "Conv1D"
+  "Linear", "Conv1D",
   "ReLU", "Sigmoid", "Tanh", "Softmax",
   "MSE", "MAE", "BinaryCE", "ClassCE",
   "Adam", "AdamW", "SGD", "MomentumSGD", "RMSProp",
