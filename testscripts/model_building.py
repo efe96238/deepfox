@@ -23,15 +23,15 @@ for epoch in range(3000):
   optimizer.step(model1.parameters())
 
   if epoch % 500 == 0:
-      print(f"  epoch={epoch}, loss={loss:.6f}")
+    print(f"  epoch={epoch}, loss={loss:.6f}")
 
 print(f"  Final loss: {loss:.6f}")
 
 print("\n=== Pattern 2: Multiple Blocks ===")
 model2 = dfx.Model(
-    Sequential(Linear(1, 16), ReLU()),
-    Sequential(Linear(16, 16), ReLU()),
-    Sequential(Linear(16, 1))
+  Sequential(Linear(1, 16), ReLU()),
+  Sequential(Linear(16, 16), ReLU()),
+  Sequential(Linear(16, 1))
 )
 
 criterion2 = dfx.MSE()
@@ -40,15 +40,15 @@ optimizer2 = dfx.Adam(lr=0.01)
 print(f"Parameter count: {len(model2.parameters())}")
 
 for epoch in range(3000):
-    pred = model2(X)
-    loss2 = criterion2.forward(y, pred)
-    grad = criterion2.backward()
-    model2.zero_grad()
-    model2.backward(grad)
-    optimizer2.step(model2.parameters())
+  pred = model2(X)
+  loss2 = criterion2.forward(y, pred)
+  grad = criterion2.backward()
+  model2.zero_grad()
+  model2.backward(grad)
+  optimizer2.step(model2.parameters())
 
-    if epoch % 500 == 0:
-        print(f"  epoch={epoch}, loss={loss2:.6f}")
+if epoch % 500 == 0:
+  print(f"  epoch={epoch}, loss={loss2:.6f}")
 
 print(f"  Final loss: {loss2:.6f}")
 

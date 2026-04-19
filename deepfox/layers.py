@@ -20,6 +20,9 @@ class Layer:
       "type": self.__class__.__name__
     }
   
+  def __repr__(self):
+    return self.__class__.__name__
+  
 class Sequential(Layer):
   def __init__(self, *layers):
     self.layers = list(layers)
@@ -45,6 +48,14 @@ class Sequential(Layer):
       "type": "Sequential",
       "layers": [layer.get_config() for layer in self.layers]
     }
+  
+  def __repr__(self):
+    items = [
+      "\n".join("  " + line for line in repr(layer).split("\n"))
+      for layer in self.layers
+    ]
+    joined = ",\n".join(items)
+    return f"{self.__class__.__name__}(\n{joined}\n)"
 
 class Linear(Layer):
   def __init__(self, in_features, out_features):
@@ -81,6 +92,10 @@ class Linear(Layer):
       "in_features": int(in_features),
       "out_features": int(out_features)
     }
+  
+  def __repr__(self):
+    in_features, out_features = self.weights.data.shape
+    return f"{self.__class__.__name__}(in_features={in_features}, out_features={out_features})"
   
 class Conv1D(Layer):
   def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
@@ -142,7 +157,6 @@ class Conv1D(Layer):
 
     batch_size, _, out_len = grad.shape
 
-    # init grads
     dweights = np.zeros_like(self.weights.data)
     dbias = np.zeros_like(self.bias.data)
     dx_padded = np.zeros_like(self.x_padded)
@@ -155,16 +169,10 @@ class Conv1D(Layer):
 
           window = self.x_padded[b, :, start:end]
 
-          # weight grad
           dweights[oc] += grad[b, oc, i] * window
-
-          # bias grad
           dbias[0, oc] += grad[b, oc, i]
-
-          # input grad
           dx_padded[b, :, start:end] += grad[b, oc, i] * self.weights.data[oc]
 
-    # remove padding from dx
     if self.padding > 0:
       dx = dx_padded[:, :, self.padding:-self.padding]
     else:
@@ -187,3 +195,117 @@ class Conv1D(Layer):
       "stride": self.stride,
       "padding": self.padding
     }
+  
+  def __repr__(self):
+    return f"{self.__class__.__name__}(in_channels={self.in_channels}, out_channels={self.out_channels}, kernel_size={self.kernel_size}, stride={self.stride}, padding={self.padding})"
+  
+class Conv2D(Layer):
+  def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
+    self.in_channels = in_channels
+    self.out_channels = out_channels
+    self.kernel_size = kernel_size
+    self.stride = stride
+    self.padding = padding
+
+    fan_in = in_channels * kernel_size * kernel_size
+    limit = np.sqrt(2.0 / fan_in)
+
+    self.weights = Parameter(
+      np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * limit
+    )
+
+    self.bias = Parameter(
+      np.zeros((1, out_channels))
+    )
+
+  def forward(self, x):
+    x = np.asarray(x)
+    self.x = x
+
+    batch_size, in_channels, height, width = x.shape
+
+    if in_channels != self.in_channels:
+      raise ValueError(f"Expected {self.in_channels} channels, got {in_channels}")
+
+    if self.padding > 0:
+      x_padded = np.pad(x, ((0, 0), (0, 0), (self.padding, self.padding), (self.padding, self.padding)))
+    else:
+      x_padded = x
+
+    self.x_padded = x_padded
+
+    out_height = (height - self.kernel_size + 2 * self.padding) // self.stride + 1
+    out_width = (width - self.kernel_size + 2 * self.padding) // self.stride + 1
+
+    out = np.zeros((batch_size, self.out_channels, out_height, out_width))
+
+    for b in range(batch_size):
+      for oc in range(self.out_channels):
+        for i in range(out_height):
+          for j in range(out_width):
+            h_start = i * self.stride
+            h_end = h_start + self.kernel_size
+
+            w_start = j * self.stride
+            w_end = w_start + self.kernel_size
+
+            window = x_padded[b, :, h_start:h_end, w_start:w_end]
+
+            kernel = self.weights.data[oc]
+            value = np.sum(window * kernel)
+            value += self.bias.data[0, oc]
+
+            out[b, oc, i, j] = value
+
+    return out
+  
+  def backward(self, grad):
+    grad = np.asarray(grad)
+
+    batch_size, _, out_height, out_width = grad.shape
+
+    dweights = np.zeros_like(self.weights.data)
+    dbias = np.zeros_like(self.bias.data)
+    dx_padded = np.zeros_like(self.x_padded)
+
+    for b in range(batch_size):
+      for oc in range(self.out_channels):
+        for i in range(out_height):
+          for j in range(out_width):
+            h_start = i * self.stride
+            h_end = h_start + self.kernel_size
+
+            w_start = j * self.stride
+            w_end = w_start + self.kernel_size
+
+            window = self.x_padded[b, :, h_start:h_end, w_start:w_end]
+
+            dweights[oc] += grad[b, oc, i, j] * window
+            dbias[0, oc] += grad[b, oc, i, j]
+            dx_padded[b, :, h_start:h_end, w_start:w_end] += grad[b, oc, i, j] * self.weights.data[oc]
+
+    if self.padding > 0:
+      dx = dx_padded[:, :, self.padding:-self.padding, self.padding:-self.padding]
+    else:
+      dx = dx_padded
+
+    self.weights.grad = dweights
+    self.bias.grad = dbias
+
+    return dx
+  
+  def parameters(self):
+    return [self.weights, self.bias]
+  
+  def get_config(self):
+    return {
+      "type": "Conv2D",
+      "in_channels": self.in_channels,
+      "out_channels": self.out_channels,
+      "kernel_size": self.kernel_size,
+      "stride": self.stride,
+      "padding": self.padding
+    }
+  
+  def __repr__(self):
+    return f"{self.__class__.__name__}(in_channels={self.in_channels}, out_channels={self.out_channels}, kernel_size={self.kernel_size}, stride={self.stride}, padding={self.padding})"

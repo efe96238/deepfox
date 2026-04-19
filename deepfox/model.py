@@ -96,3 +96,11 @@ class Model:
 
   def __call__(self, x):
     return self.forward(x)
+  
+  def __repr__(self):
+    items = [
+      "\n".join("  " + line for line in repr(block).split("\n"))
+      for block in self.blocks
+    ]
+    joined = ",\n".join(items)
+    return f"{self.__class__.__name__}(\n{joined}\n)"

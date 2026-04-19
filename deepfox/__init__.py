@@ -1,6 +1,6 @@
 from .model import Model
 
-from .layers import Linear, Conv1D, Sequential
+from .layers import Linear, Sequential, Conv1D, Conv2D
 from .activations import ReLU, Sigmoid, Tanh, Softmax
 
 from .loss_functions import MSE, MAE, BinaryCE, ClassCE
@@ -11,7 +11,7 @@ from .parameter import Parameter
 
 __all__ = [
   "Model",
-  "Linear", "Conv1D", "Sequential",
+  "Linear", "Sequential", "Conv1D", "Conv2D",
   "ReLU", "Sigmoid", "Tanh", "Softmax",
   "MSE", "MAE", "BinaryCE", "ClassCE",
   "Adam", "AdamW", "SGD", "MomentumSGD", "RMSProp",
