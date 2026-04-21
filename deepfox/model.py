@@ -2,7 +2,6 @@ import json
 import zipfile
 import numpy as np
 
-
 class Model:
   def __init__(self, *blocks):
     self.blocks = list(blocks)

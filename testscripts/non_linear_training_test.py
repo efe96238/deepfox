@@ -32,7 +32,7 @@ for epoch in range(epochs):
 final_pred = model(X)
 final_loss = criterion.forward(y, final_pred)
 
-linear_layer = model.layers[0]
+linear_layer = model.blocks[0]
 print("\nTraining finished.")
 print(f"Final loss: {final_loss:.6f}")
 print("Learned weights:", linear_layer.weights.data)
