@@ -250,9 +250,9 @@ class Conv3D(Layer):
 
     self.x_padded = x_padded
 
+    out_depth = (depth - self.kernel_size + 2 * self.padding) // self.stride + 1
     out_height = (height - self.kernel_size + 2 * self.padding) // self.stride + 1
     out_width = (width - self.kernel_size + 2 * self.padding) // self.stride + 1
-    out_depth = (depth - self.kernel_size + 2 * self.padding) // self.stride + 1
 
     out = np.zeros((batch_size, self.out_channels, out_depth, out_height, out_width))
 
