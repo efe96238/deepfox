@@ -1,6 +1,7 @@
 from .model import Model
 
-from .layers import Linear, Sequential, Conv1D, Conv2D, Conv3D, MaxPool1D, MaxPool2D, MaxPool3D, AvgPool1D, AvgPool2D, AvgPool3D, AdaptiveAvgPool1D, AdaptiveAvgPool2D, AdaptiveAvgPool3D
+from .layers import Linear, Sequential, Conv1D, Conv2D, Conv3D, MaxPool1D, MaxPool2D, MaxPool3D, AvgPool1D, AvgPool2D, AvgPool3D, AdaptiveAvgPool1D, AdaptiveAvgPool2D, AdaptiveAvgPool3D, BatchNorm1D
+
 from .activations import ReLU, Sigmoid, Tanh, Softmax
 
 from .loss_functions import MSE, MAE, BinaryCE, ClassCE
@@ -16,6 +17,7 @@ __all__ = [
   "MaxPool1D", "MaxPool2D", "MaxPool3D",
   "AvgPool1D", "AvgPool2D", "AvgPool3D",
   "AdaptiveAvgPool1D", "AdaptiveAvgPool2D", "AdaptiveAvgPool3D",
+  "BatchNorm1D",
   "ReLU", "Sigmoid", "Tanh", "Softmax",
   "MSE", "MAE", "BinaryCE", "ClassCE",
   "Adam", "AdamW", "SGD", "MomentumSGD", "RMSProp",

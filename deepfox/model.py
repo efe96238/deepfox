@@ -5,6 +5,7 @@ import numpy as np
 class Model:
   def __init__(self, *blocks):
     self.blocks = list(blocks)
+    self.training = True
 
   def add(self, block):
     self.blocks.append(block)
@@ -18,6 +19,18 @@ class Model:
     for block in reversed(self.blocks):
       grad = block.backward(grad)
     return grad
+  
+  def train(self):
+    self.training = True
+    for block in self.blocks:
+      block.train()
+    return self
+  
+  def eval(self):
+    self.training = False
+    for block in self.blocks:
+      block.eval()
+    return self
 
   def parameters(self):
     params = []

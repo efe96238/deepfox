@@ -1,5 +1,7 @@
 
 class Layer:
+  training = True
+
   def forward(self, x):
     raise NotImplementedError
 
@@ -12,6 +14,14 @@ class Layer:
   def zero_grad(self):
     for p in self.parameters():
       p.zero_grad()
+
+  def train(self):
+    self.training = True
+    return self
+  
+  def eval(self):
+    self.training = False
+    return self
 
   def get_config(self):
     return {
@@ -34,6 +44,18 @@ class Sequential(Layer):
     for layer in reversed(self.layers):
       grad = layer.backward(grad)
     return grad
+  
+  def train(self):
+    self.training = True
+    for layer in self.layers:
+      layer.train()
+    return self
+
+  def eval(self):
+    self.training = False
+    for layer in self.layers:
+      layer.eval()
+    return self
   
   def parameters(self):
     params = []
