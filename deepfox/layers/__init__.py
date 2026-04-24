@@ -6,3 +6,4 @@ from .avgpool import AvgPool1D, AvgPool2D, AvgPool3D
 from .adaptiveavgpool import AdaptiveAvgPool1D, AdaptiveAvgPool2D, AdaptiveAvgPool3D
 from .batchnorm import BatchNorm1D, BatchNorm2D, BatchNorm3D
 from .dropout import Dropout
+from .flatten import Flatten

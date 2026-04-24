@@ -7,7 +7,7 @@ from .layers import (
   AvgPool1D, AvgPool2D, AvgPool3D,
   AdaptiveAvgPool1D, AdaptiveAvgPool2D, AdaptiveAvgPool3D,
   BatchNorm1D, BatchNorm2D, BatchNorm3D,
-  Dropout
+  Dropout, Flatten
 )
 
 from .activations import ReLU, Sigmoid, Tanh, Softmax
@@ -26,7 +26,7 @@ __all__ = [
   "AvgPool1D", "AvgPool2D", "AvgPool3D",
   "AdaptiveAvgPool1D", "AdaptiveAvgPool2D", "AdaptiveAvgPool3D",
   "BatchNorm1D", "BatchNorm2D", "BatchNorm3D",
-  "Dropout",
+  "Dropout", "Flatten",
   "ReLU", "Sigmoid", "Tanh", "Softmax",
   "MSE", "MAE", "BinaryCE", "ClassCE",
   "Adam", "AdamW", "SGD", "MomentumSGD", "RMSProp",
