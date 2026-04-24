@@ -54,6 +54,8 @@ for epoch in range(1000):
 - `AdaptiveAvgPool1D`, `AdaptiveAvgPool2D`, `AdaptiveAvgPool3D` — adaptive average pooling
 - `Sequential` — sequential layer container
 - `BatchNorm1D`, `BatchNorm2D`, `BatchNorm3D` - batch normalization
+- `Dropout`
+- `Flatten`
 
 **Activations**
 - `ReLU`, `Sigmoid`, `Tanh`, `Softmax`
