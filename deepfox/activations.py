@@ -1,19 +1,6 @@
 import numpy as np
 from .layers import Layer
 
-class ReLU(Layer):
-  def forward(self, x):
-    x = np.asarray(x)
-    self.x = x
-    return np.maximum(0, x)
-
-  def backward(self, grad):
-    grad = np.asarray(grad)
-    return grad * (self.x > 0)
-
-  def parameters(self):
-    return []
-
 class Sigmoid(Layer):
   def forward(self, x):
     x = np.asarray(x)
@@ -61,5 +48,74 @@ class Softmax(Layer):
     dot = np.sum(grad * self.out, axis=1, keepdims=True)
     return self.out * (grad - dot)
 
+  def parameters(self):
+    return []
+  
+class ReLU(Layer):
+  def forward(self, x):
+    x = np.asarray(x)
+    self.x = x
+    return np.maximum(0, x)
+
+  def backward(self, grad):
+    grad = np.asarray(grad)
+    return grad * (self.x > 0)
+
+  def parameters(self):
+    return []
+  
+class LeakyReLU(Layer):
+  def __init__(self, alpha=0.01):
+    self.alpha = alpha
+
+  def forward(self, x):
+    x = np.asarray(x)
+    self.x = x
+    return np.where(x > 0, x, self.alpha * x)
+
+  def backward(self, grad):
+    grad = np.asarray(grad)
+    return grad * np.where(self.x > 0, 1, self.alpha)
+  
+  def parameters(self):
+    return []
+  
+  def get_config(self):
+    return {
+      "type": "LeakyReLU",
+      "alpha": self.alpha
+    }
+
+  def __repr__(self):
+    return f"{self.__class__.__name__}(alpha={self.alpha})"
+  
+class GeLU(Layer):
+  def forward(self, x):
+    x = np.asarray(x)
+    self.x = x
+    return 0.5 * x * (1 + np.tanh(np.sqrt(2 / np.pi) * (x + 0.044715 * x ** 3)))
+  
+  def backward(self, grad):
+    grad = np.asarray(grad)
+    a = np.sqrt(2 / np.pi) * (self.x + 0.044715 * self.x ** 3)
+    tanh_a = np.tanh(a)
+    da = np.sqrt(2 / np.pi) * (1 + 3 * 0.044715 * self.x ** 2)
+    dgelu = 0.5 * (1 + tanh_a) + 0.5 * self.x * (1 - tanh_a ** 2) * da
+    return grad * dgelu
+  
+  def parameters(self):
+    return []
+  
+class SiLU(Layer):
+  def forward(self, x):
+    x = np.asarray(x)
+    self.x = x
+    self.sigmoid = np.where(x >= 0, 1 / (1 + np.exp(-x)), np.exp(x) / (1 + np.exp(x)))
+    return x * self.sigmoid
+  
+  def backward(self, grad):
+    grad = np.asarray(grad)
+    return grad * (self.sigmoid * (1 + self.x * (1 - self.sigmoid)))
+  
   def parameters(self):
     return []

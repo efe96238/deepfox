@@ -10,7 +10,7 @@ from .layers import (
   Dropout, Flatten
 )
 
-from .activations import ReLU, Sigmoid, Tanh, Softmax
+from .activations import Sigmoid, Tanh, Softmax, ReLU, LeakyReLU, GeLU, SiLU
 
 from .loss_functions import MSE, MAE, BinaryCE, ClassCE
 
@@ -27,7 +27,8 @@ __all__ = [
   "AdaptiveAvgPool1D", "AdaptiveAvgPool2D", "AdaptiveAvgPool3D",
   "BatchNorm1D", "BatchNorm2D", "BatchNorm3D",
   "Dropout", "Flatten",
-  "ReLU", "Sigmoid", "Tanh", "Softmax",
+  "Sigmoid", "Tanh", "Softmax",
+  "ReLU", "LeakyReLU", "GeLU", "SiLU",
   "MSE", "MAE", "BinaryCE", "ClassCE",
   "Adam", "AdamW", "SGD", "MomentumSGD", "RMSProp",
   "Parameter"
