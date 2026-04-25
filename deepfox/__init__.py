@@ -12,7 +12,12 @@ from .layers import (
 
 from .activations import Sigmoid, Tanh, Softmax, LogSoftmax, ReLU, LeakyReLU, GeLU, SiLU, ELU, PReLU, SELU
 
-from .loss_functions import MSE, MAE, BCE, BCEWithLogits, CrossEntropy, CrossEntropyWithLogits
+from .loss_functions import (
+  MSE, MAE, BCE, 
+  BCEWithLogits, CrossEntropy, CrossEntropyWithLogits, 
+  HuberLoss, NLLLoss, HingeLoss, KLDivergence, 
+  CosineEmbeddingLoss, SmoothL1Loss
+)
 
 from .optimizers import Adam, AdamW, SGD, MomentumSGD, RMSProp
 
@@ -30,6 +35,7 @@ __all__ = [
   "Sigmoid", "Tanh", "Softmax", "LogSoftmax",
   "ReLU", "LeakyReLU", "GeLU", "SiLU", "ELU", "PReLU", "SELU",
   "MSE", "MAE", "BCE", "BCEWithLogits", "CrossEntropy", "CrossEntropyWithLogits",
+  "HuberLoss", "NLLLoss", "HingeLoss", "KLDivergence", "CosineEmbeddingLoss", "SmoothL1Loss",
   "Adam", "AdamW", "SGD", "MomentumSGD", "RMSProp",
   "Parameter"
 ]
