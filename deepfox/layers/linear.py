@@ -1,13 +1,14 @@
 import numpy as np
 from ..parameter import Parameter
 from .base import Layer
+from ..utils import get_rng
 
 class Linear(Layer):
   def __init__(self, in_features, out_features):
     limit = np.sqrt(2.0 / in_features)
 
     self.weights = Parameter(
-      np.random.randn(in_features, out_features) * limit
+      get_rng().standard_normal((in_features, out_features)) * limit
     )
 
     self.bias = Parameter(

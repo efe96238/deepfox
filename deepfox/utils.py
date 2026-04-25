@@ -1,5 +1,15 @@
 import numpy as np
 
+_rng_container = {
+  "rng": np.random.default_rng()
+}
+
+def seed(value):
+  _rng_container["rng"] = np.random.default_rng(value)
+
+def get_rng():
+  return _rng_container["rng"]
+
 def argmax(x, axis=None):
   x = np.asarray(x)
   if axis is None:
@@ -10,7 +20,6 @@ def argmax(x, axis=None):
         max_idx = i
     return np.unravel_index(max_idx, x.shape) if x.ndim > 1 else max_idx
 
-  # move target axis to the end
   x = np.moveaxis(x, axis, -1)
   out_shape = x.shape[:-1]
   x_flat = x.reshape(-1, x.shape[-1])

@@ -23,6 +23,8 @@ from .optimizers import Adam, AdamW, SGD, MomentumSGD, RMSProp
 
 from .parameter import Parameter
 
+from .utils import argmax, seed
+
 __all__ = [
   "Model",
   "Linear", "Sequential",
@@ -37,5 +39,6 @@ __all__ = [
   "MSE", "MAE", "BCE", "BCEWithLogits", "CrossEntropy", "CrossEntropyWithLogits",
   "HuberLoss", "NLLLoss", "HingeLoss", "KLDivergence", "CosineEmbeddingLoss", "SmoothL1Loss",
   "Adam", "AdamW", "SGD", "MomentumSGD", "RMSProp",
-  "Parameter"
+  "Parameter",
+  "argmax", "seed"
 ]

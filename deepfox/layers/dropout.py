@@ -1,5 +1,6 @@
 import numpy as np
 from .base import Layer
+from ..utils import get_rng
 
 # Maybe add spatial Dropout later (1D, 2D, 3D)
 
@@ -12,7 +13,7 @@ class Dropout(Layer):
     self.x = x
 
     if self.training:
-      self.mask = (np.random.random(x.shape) > self.p)
+      self.mask = (get_rng().random(x.shape) > self.p)
       return x * self.mask / (1 - self.p)
     
     else:

@@ -1,6 +1,7 @@
 import numpy as np
 from .base import Layer
 from ..parameter import Parameter
+from ..utils import get_rng
 
 class Conv1D(Layer):
   def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
@@ -14,7 +15,7 @@ class Conv1D(Layer):
     limit = np.sqrt(2.0 / fan_in)
 
     self.weights = Parameter(
-      np.random.randn(out_channels, in_channels, kernel_size) * limit
+      get_rng().standard_normal((out_channels, in_channels, kernel_size)) * limit
     )
 
     self.bias = Parameter(
@@ -116,7 +117,7 @@ class Conv2D(Layer):
     limit = np.sqrt(2.0 / fan_in)
 
     self.weights = Parameter(
-      np.random.randn(out_channels, in_channels, kernel_size, kernel_size) * limit
+      get_rng().standard_normal((out_channels, in_channels, kernel_size, kernel_size)) * limit
     )
 
     self.bias = Parameter(
@@ -227,7 +228,7 @@ class Conv3D(Layer):
     limit = np.sqrt(2.0 / fan_in)
 
     self.weights = Parameter(
-      np.random.randn(out_channels, in_channels, kernel_size, kernel_size, kernel_size) * limit
+      get_rng().standard_normal((out_channels, in_channels, kernel_size, kernel_size, kernel_size)) * limit
     )
 
     self.bias = Parameter(
