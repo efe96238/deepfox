@@ -28,7 +28,7 @@ class MAE:
     n = self.y.size
     return np.sign(self.y_pred - self.y) / n
 
-class BinaryCE:
+class BCE:
   def forward(self, y, y_pred):
     y = np.asarray(y)
     y_pred = np.asarray(y_pred)
@@ -45,7 +45,7 @@ class BinaryCE:
     n = self.y.size
     return (-(self.y / self.y_pred) + (1 - self.y) / (1 - self.y_pred)) / n
 
-class ClassCE:
+class CrossEntropy:
   def forward(self, y, y_pred):
     y = np.asarray(y)
     y_pred = np.asarray(y_pred)
@@ -61,3 +61,23 @@ class ClassCE:
   def backward(self):
     batch_size = self.y.shape[0]
     return -(self.y / self.y_pred) / batch_size
+  
+class CrossEntropyWithLogits:
+  def forward(self, y, logits):
+    y = np.asarray(y)
+    logits = np.asarray(logits)
+
+    self.y = y
+
+    shifted = logits - np.max(logits, axis=1, keepdims=True)
+    exp_shifted = np.exp(shifted)
+    log_sum_exp = np.log(np.sum(exp_shifted, axis=1, keepdims=True))
+    log_softmax = shifted - log_sum_exp
+
+    self.softmax = exp_shifted / np.sum(exp_shifted, axis=1, keepdims=True)
+
+    return -np.mean(np.sum(y * log_softmax, axis=1))
+
+  def backward(self):
+    batch_size = self.y.shape[0]
+    return (self.softmax - self.y) / batch_size
