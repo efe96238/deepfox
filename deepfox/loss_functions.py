@@ -44,6 +44,19 @@ class BCE:
   def backward(self):
     n = self.y.size
     return (-(self.y / self.y_pred) + (1 - self.y) / (1 - self.y_pred)) / n
+  
+class BCEWithLogits:
+  def forward(self, y, logits):
+    y = np.asarray(y)
+    logits = np.asarray(logits)
+    self.y = y
+
+    self.sigmoid = np.where(logits >= 0, 1 / (1 + np.exp(-logits)), np.exp(logits) / (1 + np.exp(logits)))
+    return np.mean(np.maximum(logits, 0) + (-logits * y) + np.log(1 + np.exp(-np.abs(logits))))
+  
+  def backward(self):
+    n = self.y.size
+    return (self.sigmoid - self.y) / n
 
 class CrossEntropy:
   def forward(self, y, y_pred):

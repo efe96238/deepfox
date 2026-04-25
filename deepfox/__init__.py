@@ -12,7 +12,7 @@ from .layers import (
 
 from .activations import Sigmoid, Tanh, Softmax, LogSoftmax, ReLU, LeakyReLU, GeLU, SiLU, ELU, PReLU, SELU
 
-from .loss_functions import MSE, MAE, BCE, CrossEntropy, CrossEntropyWithLogits
+from .loss_functions import MSE, MAE, BCE, BCEWithLogits, CrossEntropy, CrossEntropyWithLogits
 
 from .optimizers import Adam, AdamW, SGD, MomentumSGD, RMSProp
 
@@ -29,7 +29,7 @@ __all__ = [
   "Dropout", "Flatten",
   "Sigmoid", "Tanh", "Softmax", "LogSoftmax",
   "ReLU", "LeakyReLU", "GeLU", "SiLU", "ELU", "PReLU", "SELU",
-  "MSE", "MAE", "BCE", "CrossEntropy", "CrossEntropyWithLogits",
+  "MSE", "MAE", "BCE", "BCEWithLogits", "CrossEntropy", "CrossEntropyWithLogits",
   "Adam", "AdamW", "SGD", "MomentumSGD", "RMSProp",
   "Parameter"
 ]
