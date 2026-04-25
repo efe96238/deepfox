@@ -58,7 +58,7 @@ for epoch in range(1000):
 - `Flatten`
 
 **Activations**
-- `ReLU`, `Sigmoid`, `Tanh`, `Softmax`
+- `Sigmoid`, `Tanh`, `Softmax`, `LogSoftmax`, `ReLU`, `LeakyReLU`, `GeLU`, `SiLU`, `ELU`, `PReLU`, `SELU`
 
 **Loss Functions**
 - `MSE`, `MAE`, `BinaryCE`, `ClassCE`
