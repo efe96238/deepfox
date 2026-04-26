@@ -133,9 +133,10 @@ class BCEWithLogits:
       return grad
 
 class CrossEntropy:
-  def __init__(self, reduction='mean'):
+  def __init__(self, weight=None, reduction='mean'):
     if reduction not in ('mean', 'sum', 'none'):
       raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.weight = np.asarray(weight, dtype=np.float64) if weight is not None else None
     self.reduction = reduction
 
   def forward(self, y, y_pred):
@@ -150,6 +151,10 @@ class CrossEntropy:
 
     losses = -np.sum(y * np.log(y_pred), axis=1)
 
+    if self.weight is not None:
+      sample_weights = np.sum(y * self.weight, axis=1)
+      losses = losses * sample_weights
+
     if self.reduction == 'mean':
       return np.mean(losses)
     elif self.reduction == 'sum':
@@ -161,6 +166,10 @@ class CrossEntropy:
     batch_size = self.y.shape[0]
     grad = -(self.y / self.y_pred)
 
+    if self.weight is not None:
+      sample_weights = np.sum(self.y * self.weight, axis=1, keepdims=True)
+      grad = grad * sample_weights
+
     if self.reduction == 'mean':
       return grad / batch_size
     elif self.reduction == 'sum':
@@ -169,9 +178,10 @@ class CrossEntropy:
       return grad
 
 class CrossEntropyWithLogits:
-  def __init__(self, reduction='mean'):
+  def __init__(self, weight=None, reduction='mean'):
     if reduction not in ('mean', 'sum', 'none'):
       raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.weight = np.asarray(weight, dtype=np.float64) if weight is not None else None
     self.reduction = reduction
 
   def forward(self, y, logits):
@@ -189,6 +199,10 @@ class CrossEntropyWithLogits:
 
     losses = -np.sum(y * log_softmax, axis=1)
 
+    if self.weight is not None:
+      sample_weights = np.sum(y * self.weight, axis=1)
+      losses = losses * sample_weights
+
     if self.reduction == 'mean':
       return np.mean(losses)
     elif self.reduction == 'sum':
@@ -199,6 +213,10 @@ class CrossEntropyWithLogits:
   def backward(self):
     batch_size = self.y.shape[0]
     grad = self.softmax - self.y
+
+    if self.weight is not None:
+      sample_weights = np.sum(self.y * self.weight, axis=1, keepdims=True)
+      grad = grad * sample_weights
 
     if self.reduction == 'mean':
       return grad / batch_size
