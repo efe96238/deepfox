@@ -23,7 +23,7 @@ from .optimizers import Adam, AdamW, SGD, MomentumSGD, RMSProp
 
 from .parameter import Parameter
 
-from .utils import argmax, seed
+from .utils import argmax, seed, train_test_val_split
 
 __all__ = [
   "Model",
@@ -40,5 +40,5 @@ __all__ = [
   "HuberLoss", "NLLLoss", "HingeLoss", "KLDivergence", "CosineEmbeddingLoss", "SmoothL1Loss",
   "Adam", "AdamW", "SGD", "MomentumSGD", "RMSProp",
   "Parameter",
-  "argmax", "seed"
+  "argmax", "seed", "train_test_val_split"
 ]
