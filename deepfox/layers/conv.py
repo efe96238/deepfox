@@ -4,7 +4,7 @@ from ..parameter import Parameter
 from ..utils import get_rng
 
 class Conv1D(Layer):
-  def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
+  def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True):
     self.in_channels = in_channels
     self.out_channels = out_channels
     self.kernel_size = kernel_size
@@ -18,9 +18,10 @@ class Conv1D(Layer):
       get_rng().standard_normal((out_channels, in_channels, kernel_size)) * limit
     )
 
-    self.bias = Parameter(
-      np.zeros((1, out_channels))
-    )
+    if bias:
+      self.bias = Parameter(np.zeros((1, out_channels)))
+    else:
+      self.bias = None
 
   def forward(self, x):
     x = np.asarray(x)
@@ -52,19 +53,21 @@ class Conv1D(Layer):
 
           kernel = self.weights.data[oc]
           value = np.sum(window * kernel)
-          value += self.bias.data[0, oc]
+          if self.bias is not None:
+            value += self.bias.data[0, oc]
 
           out[b, oc, i] = value
 
     return out
-  
+
   def backward(self, grad):
     grad = np.asarray(grad)
 
     batch_size, _, out_len = grad.shape
 
     dweights = np.zeros_like(self.weights.data)
-    dbias = np.zeros_like(self.bias.data)
+    if self.bias is not None:
+      dbias = np.zeros_like(self.bias.data)
     dx_padded = np.zeros_like(self.x_padded)
 
     for b in range(batch_size):
@@ -76,7 +79,8 @@ class Conv1D(Layer):
           window = self.x_padded[b, :, start:end]
 
           dweights[oc] += grad[b, oc, i] * window
-          dbias[0, oc] += grad[b, oc, i]
+          if self.bias is not None:
+            dbias[0, oc] += grad[b, oc, i]
           dx_padded[b, :, start:end] += grad[b, oc, i] * self.weights.data[oc]
 
     if self.padding > 0:
@@ -85,12 +89,15 @@ class Conv1D(Layer):
       dx = dx_padded
 
     self.weights.grad = dweights
-    self.bias.grad = dbias
+    if self.bias is not None:
+      self.bias.grad = dbias
 
     return dx
 
   def parameters(self):
-    return [self.weights, self.bias]
+    if self.bias is not None:
+      return [self.weights, self.bias]
+    return [self.weights]
 
   def get_config(self):
     return {
@@ -99,14 +106,15 @@ class Conv1D(Layer):
       "out_channels": self.out_channels,
       "kernel_size": self.kernel_size,
       "stride": self.stride,
-      "padding": self.padding
+      "padding": self.padding,
+      "bias": self.bias is not None
     }
-  
+
   def __repr__(self):
-    return f"{self.__class__.__name__}(in_channels={self.in_channels}, out_channels={self.out_channels}, kernel_size={self.kernel_size}, stride={self.stride}, padding={self.padding})"
-  
+    return f"{self.__class__.__name__}(in_channels={self.in_channels}, out_channels={self.out_channels}, kernel_size={self.kernel_size}, stride={self.stride}, padding={self.padding}, bias={self.bias is not None})"
+
 class Conv2D(Layer):
-  def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
+  def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True):
     self.in_channels = in_channels
     self.out_channels = out_channels
     self.kernel_size = kernel_size
@@ -120,9 +128,10 @@ class Conv2D(Layer):
       get_rng().standard_normal((out_channels, in_channels, kernel_size, kernel_size)) * limit
     )
 
-    self.bias = Parameter(
-      np.zeros((1, out_channels))
-    )
+    if bias:
+      self.bias = Parameter(np.zeros((1, out_channels)))
+    else:
+      self.bias = None
 
   def forward(self, x):
     x = np.asarray(x)
@@ -159,19 +168,21 @@ class Conv2D(Layer):
 
             kernel = self.weights.data[oc]
             value = np.sum(window * kernel)
-            value += self.bias.data[0, oc]
+            if self.bias is not None:
+              value += self.bias.data[0, oc]
 
             out[b, oc, i, j] = value
 
     return out
-  
+
   def backward(self, grad):
     grad = np.asarray(grad)
 
     batch_size, _, out_height, out_width = grad.shape
 
     dweights = np.zeros_like(self.weights.data)
-    dbias = np.zeros_like(self.bias.data)
+    if self.bias is not None:
+      dbias = np.zeros_like(self.bias.data)
     dx_padded = np.zeros_like(self.x_padded)
 
     for b in range(batch_size):
@@ -187,7 +198,8 @@ class Conv2D(Layer):
             window = self.x_padded[b, :, h_start:h_end, w_start:w_end]
 
             dweights[oc] += grad[b, oc, i, j] * window
-            dbias[0, oc] += grad[b, oc, i, j]
+            if self.bias is not None:
+              dbias[0, oc] += grad[b, oc, i, j]
             dx_padded[b, :, h_start:h_end, w_start:w_end] += grad[b, oc, i, j] * self.weights.data[oc]
 
     if self.padding > 0:
@@ -196,13 +208,16 @@ class Conv2D(Layer):
       dx = dx_padded
 
     self.weights.grad = dweights
-    self.bias.grad = dbias
+    if self.bias is not None:
+      self.bias.grad = dbias
 
     return dx
-  
+
   def parameters(self):
-    return [self.weights, self.bias]
-  
+    if self.bias is not None:
+      return [self.weights, self.bias]
+    return [self.weights]
+
   def get_config(self):
     return {
       "type": "Conv2D",
@@ -210,14 +225,15 @@ class Conv2D(Layer):
       "out_channels": self.out_channels,
       "kernel_size": self.kernel_size,
       "stride": self.stride,
-      "padding": self.padding
+      "padding": self.padding,
+      "bias": self.bias is not None
     }
-  
+
   def __repr__(self):
-    return f"{self.__class__.__name__}(in_channels={self.in_channels}, out_channels={self.out_channels}, kernel_size={self.kernel_size}, stride={self.stride}, padding={self.padding})"
-  
+    return f"{self.__class__.__name__}(in_channels={self.in_channels}, out_channels={self.out_channels}, kernel_size={self.kernel_size}, stride={self.stride}, padding={self.padding}, bias={self.bias is not None})"
+
 class Conv3D(Layer):
-  def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
+  def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, bias=True):
     self.in_channels = in_channels
     self.out_channels = out_channels
     self.kernel_size = kernel_size
@@ -231,9 +247,10 @@ class Conv3D(Layer):
       get_rng().standard_normal((out_channels, in_channels, kernel_size, kernel_size, kernel_size)) * limit
     )
 
-    self.bias = Parameter(
-      np.zeros((1, out_channels))
-    )
+    if bias:
+      self.bias = Parameter(np.zeros((1, out_channels)))
+    else:
+      self.bias = None
 
   def forward(self, x):
     x = np.asarray(x)
@@ -275,19 +292,21 @@ class Conv3D(Layer):
 
               kernel = self.weights.data[oc]
               value = np.sum(window * kernel)
-              value += self.bias.data[0, oc]
+              if self.bias is not None:
+                value += self.bias.data[0, oc]
 
               out[b, oc, d, i, j] = value
 
     return out
-  
+
   def backward(self, grad):
     grad = np.asarray(grad)
 
     batch_size, _, out_depth, out_height, out_width = grad.shape
 
     dweights = np.zeros_like(self.weights.data)
-    dbias = np.zeros_like(self.bias.data)
+    if self.bias is not None:
+      dbias = np.zeros_like(self.bias.data)
     dx_padded = np.zeros_like(self.x_padded)
 
     for b in range(batch_size):
@@ -307,7 +326,8 @@ class Conv3D(Layer):
               window = self.x_padded[b, :, d_start:d_end, h_start:h_end, w_start:w_end]
 
               dweights[oc] += grad[b, oc, d, i, j] * window
-              dbias[0, oc] += grad[b, oc, d, i, j]
+              if self.bias is not None:
+                dbias[0, oc] += grad[b, oc, d, i, j]
               dx_padded[b, :, d_start:d_end, h_start:h_end, w_start:w_end] += grad[b, oc, d, i, j] * self.weights.data[oc]
 
     if self.padding > 0:
@@ -316,13 +336,16 @@ class Conv3D(Layer):
       dx = dx_padded
 
     self.weights.grad = dweights
-    self.bias.grad = dbias
+    if self.bias is not None:
+      self.bias.grad = dbias
 
     return dx
-  
+
   def parameters(self):
-    return [self.weights, self.bias]
-  
+    if self.bias is not None:
+      return [self.weights, self.bias]
+    return [self.weights]
+
   def get_config(self):
     return {
       "type": "Conv3D",
@@ -330,8 +353,9 @@ class Conv3D(Layer):
       "out_channels": self.out_channels,
       "kernel_size": self.kernel_size,
       "stride": self.stride,
-      "padding": self.padding
+      "padding": self.padding,
+      "bias": self.bias is not None
     }
-  
+
   def __repr__(self):
-    return f"{self.__class__.__name__}(in_channels={self.in_channels}, out_channels={self.out_channels}, kernel_size={self.kernel_size}, stride={self.stride}, padding={self.padding})"
+    return f"{self.__class__.__name__}(in_channels={self.in_channels}, out_channels={self.out_channels}, kernel_size={self.kernel_size}, stride={self.stride}, padding={self.padding}, bias={self.bias is not None})"
