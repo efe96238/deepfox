@@ -1,6 +1,11 @@
 import numpy as np
 
 class MSE:
+  def __init__(self, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.reduction = reduction
+
   def forward(self, y, y_pred):
     y = np.asarray(y)
     y_pred = np.asarray(y_pred)
@@ -8,13 +13,31 @@ class MSE:
     self.y = y
     self.y_pred = y_pred
 
-    return np.mean((y - y_pred) ** 2)
+    losses = (y - y_pred) ** 2
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
 
   def backward(self):
-    n = self.y.size
-    return (2 / n) * (self.y_pred - self.y)
-  
+    grad = 2 * (self.y_pred - self.y)
+
+    if self.reduction == 'mean':
+      return grad / self.y.size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
+
 class MAE:
+  def __init__(self, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.reduction = reduction
+
   def forward(self, y, y_pred):
     y = np.asarray(y)
     y_pred = np.asarray(y_pred)
@@ -22,60 +45,135 @@ class MAE:
     self.y = y
     self.y_pred = y_pred
 
-    return np.mean(np.abs(y - y_pred))
-  
+    losses = np.abs(y - y_pred)
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
+
   def backward(self):
-    n = self.y.size
-    return np.sign(self.y_pred - self.y) / n
+    grad = np.sign(self.y_pred - self.y)
+
+    if self.reduction == 'mean':
+      return grad / self.y.size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
 
 class BCE:
+  def __init__(self, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.reduction = reduction
+
   def forward(self, y, y_pred):
     y = np.asarray(y)
     y_pred = np.asarray(y_pred)
 
     eps = 1e-15
-    y_pred = np.clip(y_pred, eps, 1.0 - eps) #so that log(0) does not return -inf or NaN
+    y_pred = np.clip(y_pred, eps, 1.0 - eps)
 
     self.y = y
     self.y_pred = y_pred
 
-    return -np.mean(y * np.log(y_pred) + (1.0 - y) * np.log(1.0 - y_pred))
+    losses = -(y * np.log(y_pred) + (1.0 - y) * np.log(1.0 - y_pred))
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
 
   def backward(self):
-    n = self.y.size
-    return (-(self.y / self.y_pred) + (1 - self.y) / (1 - self.y_pred)) / n
-  
+    grad = -(self.y / self.y_pred) + (1 - self.y) / (1 - self.y_pred)
+
+    if self.reduction == 'mean':
+      return grad / self.y.size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
+
 class BCEWithLogits:
+  def __init__(self, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.reduction = reduction
+
   def forward(self, y, logits):
     y = np.asarray(y)
     logits = np.asarray(logits)
+
     self.y = y
 
     self.sigmoid = np.where(logits >= 0, 1 / (1 + np.exp(-logits)), np.exp(logits) / (1 + np.exp(logits)))
-    return np.mean(np.maximum(logits, 0) + (-logits * y) + np.log(1 + np.exp(-np.abs(logits))))
-  
+
+    losses = np.maximum(logits, 0) + (-logits * y) + np.log(1 + np.exp(-np.abs(logits)))
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
+
   def backward(self):
-    n = self.y.size
-    return (self.sigmoid - self.y) / n
+    grad = self.sigmoid - self.y
+
+    if self.reduction == 'mean':
+      return grad / self.y.size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
 
 class CrossEntropy:
+  def __init__(self, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.reduction = reduction
+
   def forward(self, y, y_pred):
     y = np.asarray(y)
     y_pred = np.asarray(y_pred)
 
     eps = 1e-15
-    y_pred = np.clip(y_pred, eps, 1.0 - eps) #so that log(0) does not return -inf or NaN
+    y_pred = np.clip(y_pred, eps, 1.0 - eps)
 
     self.y = y
     self.y_pred = y_pred
 
-    return -np.mean(np.sum(y * np.log(y_pred), axis=1))
+    losses = -np.sum(y * np.log(y_pred), axis=1)
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
 
   def backward(self):
     batch_size = self.y.shape[0]
-    return -(self.y / self.y_pred) / batch_size
-  
+    grad = -(self.y / self.y_pred)
+
+    if self.reduction == 'mean':
+      return grad / batch_size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
+
 class CrossEntropyWithLogits:
+  def __init__(self, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.reduction = reduction
+
   def forward(self, y, logits):
     y = np.asarray(y)
     logits = np.asarray(logits)
@@ -89,15 +187,32 @@ class CrossEntropyWithLogits:
 
     self.softmax = exp_shifted / np.sum(exp_shifted, axis=1, keepdims=True)
 
-    return -np.mean(np.sum(y * log_softmax, axis=1))
+    losses = -np.sum(y * log_softmax, axis=1)
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
 
   def backward(self):
     batch_size = self.y.shape[0]
-    return (self.softmax - self.y) / batch_size
-  
+    grad = self.softmax - self.y
+
+    if self.reduction == 'mean':
+      return grad / batch_size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
+
 class HuberLoss:
-  def __init__(self, delta=1.0):
+  def __init__(self, delta=1.0, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
     self.delta = delta
+    self.reduction = reduction
 
   def forward(self, y, y_pred):
     y = np.asarray(y)
@@ -106,26 +221,65 @@ class HuberLoss:
     self.y = y
     self.y_pred = y_pred
 
-    return np.mean(np.where(np.abs(y - y_pred) <= self.delta, 0.5 * (y - y_pred)**2, self.delta * (np.abs(y - y_pred) - 0.5 * self.delta)))
-  
+    diff = np.abs(y - y_pred)
+    losses = np.where(diff <= self.delta, 0.5 * (y - y_pred) ** 2, self.delta * (diff - 0.5 * self.delta))
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
+
   def backward(self):
-    n = self.y.size
-    return np.where(np.abs(self.y - self.y_pred) <= self.delta, (self.y_pred - self.y) / n, self.delta * np.sign(self.y_pred - self.y) / n)
-  
+    diff = np.abs(self.y - self.y_pred)
+    grad = np.where(diff <= self.delta, self.y_pred - self.y, self.delta * np.sign(self.y_pred - self.y))
+
+    if self.reduction == 'mean':
+      return grad / self.y.size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
+
 class NLLLoss:
+  def __init__(self, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.reduction = reduction
+
   def forward(self, y, log_probs):
     y = np.asarray(y)
     log_probs = np.asarray(log_probs)
 
     self.y = y
 
-    return -np.mean(np.sum(y * log_probs, axis=1))
-  
+    losses = -np.sum(y * log_probs, axis=1)
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
+
   def backward(self):
     batch_size = self.y.shape[0]
-    return -self.y / batch_size
-  
+    grad = -self.y
+
+    if self.reduction == 'mean':
+      return grad / batch_size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
+
 class HingeLoss:
+  def __init__(self, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.reduction = reduction
+
   def forward(self, y, y_pred):
     y = np.asarray(y)
     y_pred = np.asarray(y_pred)
@@ -133,13 +287,31 @@ class HingeLoss:
     self.y = y
     self.y_pred = y_pred
 
-    return np.mean(np.maximum(0, 1 - y * y_pred))
-  
+    losses = np.maximum(0, 1 - y * y_pred)
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
+
   def backward(self):
-    n = self.y.size
-    return np.where(1 - self.y * self.y_pred > 0, -self.y / n, 0)
-  
+    grad = np.where(1 - self.y * self.y_pred > 0, -self.y, 0.0)
+
+    if self.reduction == 'mean':
+      return grad / self.y.size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
+
 class KLDivergence:
+  def __init__(self, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
+    self.reduction = reduction
+
   def forward(self, y, log_probs):
     y = np.asarray(y)
     log_probs = np.asarray(log_probs)
@@ -149,15 +321,32 @@ class KLDivergence:
 
     self.y = y
 
-    return np.mean(np.sum(y * (np.log(y) - log_probs), axis=1))
-  
+    losses = np.sum(y * (np.log(y) - log_probs), axis=1)
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
+
   def backward(self):
     batch_size = self.y.shape[0]
-    return -self.y / batch_size
-  
+    grad = -self.y
+
+    if self.reduction == 'mean':
+      return grad / batch_size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
+
 class CosineEmbeddingLoss:
-  def __init__(self, margin=0.0):
+  def __init__(self, margin=0.0, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
     self.margin = margin
+    self.reduction = reduction
 
   def forward(self, y, x1, x2):
     y = np.asarray(y, dtype=np.float64)
@@ -176,9 +365,14 @@ class CosineEmbeddingLoss:
 
     self.cos = self.dot / (self.norm1 * self.norm2)
 
-    loss = np.where(y == 1, 1 - self.cos, np.maximum(0, self.cos - self.margin))
+    losses = np.where(y == 1, 1 - self.cos, np.maximum(0, self.cos - self.margin))
 
-    return np.mean(loss)
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
 
   def backward(self):
     batch_size = self.y.shape[0]
@@ -191,14 +385,22 @@ class CosineEmbeddingLoss:
 
     scale = np.where(mask_pos, -1.0, np.where(mask_neg, 1.0, 0.0))
 
-    dx1 = scale * dcos_dx1 / batch_size
-    dx2 = scale * dcos_dx2 / batch_size
+    dx1 = scale * dcos_dx1
+    dx2 = scale * dcos_dx2
 
-    return dx1, dx2
-  
+    if self.reduction == 'mean':
+      return dx1 / batch_size, dx2 / batch_size
+    elif self.reduction == 'sum':
+      return dx1, dx2
+    elif self.reduction == 'none':
+      return dx1, dx2
+
 class SmoothL1Loss:
-  def __init__(self, beta=1.0):
+  def __init__(self, beta=1.0, reduction='mean'):
+    if reduction not in ('mean', 'sum', 'none'):
+      raise ValueError("reduction must be 'mean', 'sum', or 'none'.")
     self.beta = beta
+    self.reduction = reduction
 
   def forward(self, y, y_pred):
     y = np.asarray(y)
@@ -207,8 +409,23 @@ class SmoothL1Loss:
     self.y = y
     self.y_pred = y_pred
 
-    return np.mean(np.where(np.abs(y - y_pred) <= self.beta, 0.5 * (y - y_pred)**2 / self.beta, np.abs(y - y_pred) - 0.5 * self.beta))
+    diff = np.abs(y - y_pred)
+    losses = np.where(diff <= self.beta, 0.5 * (y - y_pred) ** 2 / self.beta, diff - 0.5 * self.beta)
+
+    if self.reduction == 'mean':
+      return np.mean(losses)
+    elif self.reduction == 'sum':
+      return np.sum(losses)
+    elif self.reduction == 'none':
+      return losses
 
   def backward(self):
-    n = self.y.size
-    return np.where(np.abs(self.y - self.y_pred) <= self.beta, (self.y_pred - self.y) / (self.beta * n), np.sign(self.y_pred - self.y) / n)
+    diff = np.abs(self.y - self.y_pred)
+    grad = np.where(diff <= self.beta, (self.y_pred - self.y) / self.beta, np.sign(self.y_pred - self.y))
+
+    if self.reduction == 'mean':
+      return grad / self.y.size
+    elif self.reduction == 'sum':
+      return grad
+    elif self.reduction == 'none':
+      return grad
