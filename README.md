@@ -61,7 +61,10 @@ for epoch in range(1000):
 - `Sigmoid`, `Tanh`, `Softmax`, `LogSoftmax`, `ReLU`, `LeakyReLU`, `GeLU`, `SiLU`, `ELU`, `PReLU`, `SELU`
 
 **Loss Functions**
-- `MSE`, `MAE`, `BCE`, `CrossEntropy`, `CrossEntropyWithLogits`
+- `MSE`, `MAE`, `BCE`, 
+- `BCEWithLogits`, `CrossEntropy`, `CrossEntropyWithLogits`, 
+- `HuberLoss`, `NLLLoss`, `HingeLoss`, `KLDivergence`, 
+- `CosineEmbeddingLoss`, `SmoothL1Loss`
 
 **Optimizers**
 - `Adam`, `AdamW`, `SGD`, `MomentumSGD`, `RMSProp`
